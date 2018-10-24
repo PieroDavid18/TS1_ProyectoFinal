@@ -2,4 +2,5 @@
 
 ## Integrantes
 * Grandez Valle, Geiner
-* _Añadan sus nombres_
+* Ricapa Villar, Piero
+* Michue Zevallos, Jennyfer
