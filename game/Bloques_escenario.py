@@ -1,4 +1,4 @@
-# Diseño: https://codepen.io/anon/pen/LgomZd
+# Diseño: https://codepen.io/anon/pen/VEOGpG?editors=0110
 import pygame.sprite
 
 TIPOS = {
