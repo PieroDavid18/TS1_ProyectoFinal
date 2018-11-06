@@ -3,8 +3,7 @@ class Snake:
 	Esta es la serpiente de nuestro juego
 	"""
 	default_color = "verde"
-	def __init__(self, newColor, posX, posY, longitud, direccion, vidas):
-		self.color = newColor
+	def __init__(self, posX, posY, longitud, direccion, vidas):
 		self.x = posX
 		self.y = posY
 		self.longitud = longitud
@@ -25,7 +24,7 @@ class Snake:
 		return True if self.vidas > 0 else False
 
 	def perderVida(self):
-		if conVida():
+		if self.conVida():
 			self.vidas -= 1
 
 	
