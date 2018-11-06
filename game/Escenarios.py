@@ -1,5 +1,6 @@
 from pygame import sprite, surface, time, Color, draw, Rect
 
+# Escenarios de Prueba
 class simpleEscenario(sprite.Sprite):
 	pass
 
@@ -12,19 +13,31 @@ class testEscenario(sprite.Sprite):
 		self.complete = True
 		self.actualizar = False
 
+### FIN DE Escenarios de prueba
+
 class MenuEscenario(sprite.Sprite):
 	def __init__(self, screen):
 		sprite.Sprite.__init__(self)
 		self.image = surface.Surface(screen)
 		self.image.fill((255, 255, 255))
 		self.rect = self.image.get_rect()
-		draw.circle(self.image, Color("yellow"), self.rect.center, int(screen[1]*0.25))
-		rect = (self.rect.centerx, int(screen[1]*0.5*0.25), self.rect.centery, int(screen[1]*0.5*0.15))
-		rect = Rect(rect[0]-rect[1], rect[2]-rect[3], rect[1]*2, rect[3]*2)
-		draw.polygon(self.image, Color("orange"), [rect.topleft, (rect.x+0.25*rect.w, rect.centery), rect.bottomleft, rect.midright])
+		self.playButton = surface.Surface([int(screen[1]*0.5), int(screen[1]*0.5)])
+		self.playButton.fill(Color("white"))
+		rect = self.playButton.get_rect()
+		rect.center = self.rect.center
+		draw.circle(self.playButton, Color("yellow"), [int(self.playButton.get_width()/2), int(self.playButton.get_width()/2)], int(self.playButton.get_width()/2))
+		rect = self.playButton.get_size()
+		rect = Rect([(int(rect[0]*0.25), int(rect[1]*0.35)), (int(rect[0]*0.5), int(rect[1]*0.3))])
+		# rect = (self.rect.centerx, int(screen[1]*0.5*0.25), self.rect.centery, int(screen[1]*0.5*0.15))
+		# rect = Rect(rect[0]-rect[1], rect[2]-rect[3], rect[1]*2, rect[3]*2)
+		draw.polygon(self.playButton, Color("orange"), [rect.topleft, (rect.x+0.25*rect.w, rect.centery), rect.bottomleft, rect.midright])
+		self.image.blit(self.playButton, tuple(map(lambda val: int(val - self.playButton.get_width()/2), self.rect.center)))
 		del rect
 		self.complete = True
 		self.actualizar = False
+		self.code = "1"
+	def getCenterPlayButton(self):
+		return self.rect.center
 
 class EscenarioInicio(sprite.Sprite):
 	def __init__(self, screen, animation, start = time.get_ticks()):
@@ -37,6 +50,7 @@ class EscenarioInicio(sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = (int(screen[0]*0.5), int(screen[1]*0.5))
 		self.actualizar = False
+		self.code = "0"
 
 	def update(self):
 		progress = (time.get_ticks() - self.start)/self.animation
@@ -58,7 +72,7 @@ class EscenarioCnt(sprite.GroupSingle):
 	def __init__(self, screen):
 		sprite.GroupSingle.__init__(self)
 		self.timeInitScreen = time.get_ticks()
-		self.timeNextScreen = 5000
+		self.timeNextScreen = 2000
 		self.screen = screen
 		self.escenerio = EscenarioInicio(self.screen, self.timeNextScreen*4/5)
 		self.nextEscenario = MenuEscenario(self.screen)

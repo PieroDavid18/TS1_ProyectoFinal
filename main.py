@@ -21,6 +21,17 @@ def main():
 			if event.type == pygame.QUIT:
 				exit()
 			if event.type == pygame.MOUSEBUTTONDOWN:
+				if manageEscenarios.escenerio.code == "1":
+					import math
+					x1, y1 = event.pos
+					x2, y2 = manageEscenarios.escenerio.getCenterPlayButton()
+					distance = math.hypot(x1 - x2, y1 - y2)
+					if distance <= manageEscenarios.escenerio.playButton.get_width()/2:
+						exit()
+					# if rect.collidepoint(event.pos):
+					# 	exit()
+
+			if event.type == pygame.KEYDOWN:
 				exit()
 			""" if event.type == pygame.KEYDOWN:
 				simple = simpleEscenario(manageEscenarios)
