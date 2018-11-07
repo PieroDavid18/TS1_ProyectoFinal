@@ -27,7 +27,9 @@ def main():
 					x2, y2 = manageEscenarios.escenerio.getCenterPlayButton()
 					distance = math.hypot(x1 - x2, y1 - y2)
 					if distance <= manageEscenarios.escenerio.playButton.get_width()/2:
-						exit()
+						from game.Escenarios import Escenario
+						manageEscenarios.changeEscenario(Escenario(manageEscenarios.screen))
+						del Escenario
 					# if rect.collidepoint(event.pos):
 					# 	exit()
 

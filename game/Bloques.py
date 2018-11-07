@@ -1,94 +1,128 @@
-from pygame import sprite, surface, Color
-from Claves import Clave
-
+from pygame import sprite, surface, Color, time
 from pygame import time
-
-class Escenarios(sprite.Group):
-	def __init__(self, screen, escenario):
-		sprite.Group.__init__(self)
-		self.espacios = {"tablero": screen}
-		self.escenario = escenario
-
-	def NewTablero(self, fondo, estructura):
-		self.tablero_cnt = AreaTablero(self.espacios["tablero"], fondo)
-		# areaTablero.rect.move_ip(0, 0)
-class EscenarioCnt(sprite.GroupSingle):
-	def __init__(self):
-		sprite.GroupSingle.__init__(self)
-
-class EscenarioView(sprite.Sprite):
-	colors = ["green"]
-	def __init__(self, screen, timer):
-		self.image = surface.Surface(screen)
 
 class AreaTablero(sprite.Sprite):
 	def __init__(self, size, bgcolor):
+		sprite.Sprite.__init__(self)
 		self.image = surface.Surface(size)
 		self.image.fill(Color(bgcolor))
 		self.rect = self.image.get_rect()
-
-	# def 
+		self.tableroCnt = TableroCnt()
+		tablero = Tablero([42, 48], size)
+		tablero.rect.center = self.rect.center
+		self.tableroCnt.add(tablero)
+		self.tableroCnt.draw(self.image)
+		self.actualizar = False
 
 class TableroCnt(sprite.GroupSingle):
-	def __init__(self):
-		pass
-class Tablero(sprite.Sprite):
-	def __init__(self, color):
-		self
+	pass
 
-class ItemsTablero(sprite.Group):
-	def __init__(self, rangoCelda, maxSize, colors = ("#b6c25a", "#afbc54"), estructura = None):
-		sprite.Group.__init__(self)
-		self.colors = (colors[0], colors[1]) # determinar 2 colores
-		self.rangeSize = (rangoCelda[0], rangoCelda[1]) # determinar rango del tamaño de la celda
+class Tablero(sprite.Sprite):
+	def __init__(self, rangoCelda, maxSize, estructura = None):
+		sprite.Sprite.__init__(self)
+		self.rangeSize = (rangoCelda[0], rangoCelda[1])
 		self.sizeCelda = self.rangeSize[0]
-		self.templates = []
-		for color in self.colors:
-			temp = surface.Surface([self.sizeCelda, self.sizeCelda])
-			temp.fill(Color(color))
-			self.templates.append(temp)
-		self.actualizar = {"templates": [False, False]}
-		self.dimesion = (int(maxSize[0]/self.sizeCelda), int(maxSize[1]/self.sizeCelda))
-		if isinstance(estructura, int):
-			if estructura == 1:
-				from Estructuras import Estructura1 as estructura
-				for fila in range(self.dimesion[0]):
-					for col in range(self.dimesion[1]):
-						if estructura[fila][col] == 1:
-							self.add(Celda(self.templates[(fila+col)%2], pos=(fila, col)))
-			else:
-				estructura = None
-		if estructura == None:
-			for fila in range(self.dimesion[0]):
-				for col in range(self.dimesion[1]):
-					self.add(Celda(self.templates[(fila+col)%2], pos=(fila, col)))
+		self.dimension = (int(maxSize[0]/self.sizeCelda), int(maxSize[1]/self.sizeCelda))
+		self.celdas = CeldasTablero(self.sizeCelda, self.dimension)
+		sizeSurf = tuple(map(lambda val: val*self.sizeCelda, self.dimension))
+		self.image = surface.Surface(sizeSurf)
+		del sizeSurf
+		self.celdas.draw(self.image)
+		self.rect = self.image.get_rect()
+
+	def update(self):
+		pass
+
+class CeldasTablero(sprite.Group):
+	COLORS = ("#b6c25a", "#afbc54", "brown")
+	def __init__(self, sizeCelda, dimension, colors = dict(), estructura = None):
+		sprite.Group.__init__(self)
+		colors.setdefault("impar", self.COLORS[0])
+		colors.setdefault("par", self.COLORS[1])
+		colors.setdefault("obs", [self.COLORS[2]])
+		self.colores = [colors["par"], colors["impar"], colors["obs"]]
+		self.dimension = (dimension[0], dimension[1])
+		self.actualizar = False
+		self.filas = []
+		self.columnas = []
+		self.sizeCelda = sizeCelda
+		self.estructura = estructura
+		for idFila in range(self.dimension[0]):
+			self.filas.append(FilaTablero())
+			for idCol in range(self.dimension[1]):
+				if len(self.columnas) < idCol+1: self.columnas.append(ColumnaTablero())
+				celda = None
+				if self.estructura == None:
+					celda = Celda(self.sizeCelda, pos=(idFila, idCol), color=self.colores[(idFila+idCol)%2])
+				self.add(celda)
+				self.filas[idFila].add(celda)
+				self.columnas[idCol].add(celda)
+				
+class FilaTablero(sprite.Group):
+	pass
+
+class ColumnaTablero(sprite.Group):
+	pass
 
 class Celda(sprite.Sprite):
 	def __init__(self, base, **kargs):
 		sprite.Sprite.__init__(self)
+		kargs.setdefault("tipo", 1)
+		self.tipo = kargs["tipo"] # 1: habitable, -1: no habitable
 		if isinstance(base, surface.Surface):
 			self.image = base
-		elif isinstance(base, (list, tuple)):
-			self.image = surface.Surface([base[0], base[1]])
-
+		else:
+			if isinstance(base, (tuple, list)):
+				self.image = surface.Surface(base)
+			elif isinstance(base, int):
+				self.image = surface.Surface((base, base))
+			self.image.fill(Color(kargs["color"]))
 		self.rect = self.image.get_rect()
 		if "pos" in kargs:
-			base = self.image.get_size()
-			self.rect.move_ip(base[0] * kargs["pos"][0], base[1] * kargs["pos"][1])
+			self.rect.move_ip(self.image.get_width()*kargs["pos"][0], self.image.get_height()*kargs["pos"][1])
+		self.actualizar = False
+	
+	def getNext(self, dir):
+		posx, posy = self.getPos()
+		siguiente = None
+		for grupo in self.groups():
+			if (dir == 1 or dir == 3) and isinstance(grupo, ColumnaTablero):
+				for celda in grupo.sprites():
+					celdaY = celda.getPos()[1]
+					if dir == 1:
+						if celdaY<posy:
+							siguiente = celdaY
+							if celdaY + 1 == posy: return siguiente
+					elif  celdaY > posy:
+						siguiente = celda
+						if celdaY - 1 == posy: return siguiente
+				else: return siguiente
+			if (dir==2 or dir==4) and isinstance(grupo, FilaTablero):
+				for celda in grupo.sprites():
+					celdaX = celda.getPos[0]
+					if dir == 2:
+						if celdaX > posx:
+							siguiente = celda
+							if celdaX + 1 == posx: return siguiente
+					elif celdaX<posx:
+						siguiente = celda
+						if celdaX - 1 == posx: return siguiente
+				else: return siguiente
 	def getPos(self):
-		pixPos = self.image.get_offset()
+		posPix = self.image.get_offset()
 		size = self.image.get_size()
-		return (pixPos[0]/size[0], pixPos[1]/size[1])
+		return (int(posPix[0]/size[0]), int(posPix[1]/size[1]))
+	
 	def update(self):
-		PosParOImpar = sum(self.getPos())%2
-		actualizar = self.groups()[0].actualizar["templates"][PosParOImpar]
-		if actualizar:
-			pos = self.image.get_offset()
-			self.image = self.groups()[0].templates[PosParOImpar]
-			self.rect = self.image.get_rect()
-			if pos != self.image.get_offset():
-				self.rect.move(*pos)
+		for group in self.groups():
+			if isinstance(group, CeldasTablero):
+				self.actualizar = group.actualizar
+				if group.actualizar:
+					group.Actualizar(self)
+				break
 
+
+""" TEmporales """
 class BloqueCuerpoSerpiente(sprite.Group):
 	colors = ["blue", "yellow", "orange"]
 	def __init__(self, tablero, lenInit):

@@ -1,4 +1,5 @@
 from pygame import sprite, surface, time, Color, draw, Rect
+from game.Bloques import AreaTablero
 
 # Escenarios de Prueba
 class simpleEscenario(sprite.Sprite):
@@ -14,6 +15,24 @@ class testEscenario(sprite.Sprite):
 		self.actualizar = False
 
 ### FIN DE Escenarios de prueba
+class Escena(sprite.Group):
+	def __init__(self, screen, escena = "0"):
+		sprite.Group.__init__(self)
+		self.espacios = {"tablero": screen}
+		self.add(AreaTablero(self.espacios["tablero"], "green"))
+
+class Escenario(sprite.Sprite):
+
+	def __init__(self, screen, escena = "0"):
+		sprite.Sprite.__init__(self)
+		self.code = "4"
+		self.subcode = escena
+		self.image = surface.Surface(screen)
+		self.escena = Escena(screen, escena)
+		self.escena.draw(self.image)
+		self.rect = self.image.get_rect()
+		self.complete = True
+		self.actualizar = False
 
 class MenuEscenario(sprite.Sprite):
 	def __init__(self, screen):
@@ -79,20 +98,27 @@ class EscenarioCnt(sprite.GroupSingle):
 		self.add(self.escenerio)
 		self.actualizar = False
 
+	def changeEscenario(self, escenario):
+		self.nextEscenario = escenario
+		self.timeNextScreen = 0
+
 	def ReRender(self, ventana):
 		self.update()
 		superficie = self.sprites()[0]
 		if superficie.actualizar:
 			self.actualizar = True
 			superficie.actualizar = False
-			self.draw(ventana)
 		if superficie.complete:
 			if self.timeNextScreen >= 0 and self.timeInitScreen + self.timeNextScreen - time.get_ticks() < 0 and self.nextEscenario.complete:
 				# self.add(self.nextEscenario)
 				self.escenerio = self.nextEscenario
 				self.add(self.escenerio)
-				self.nextEscenario = testEscenario(self.screen)
+				if isinstance(self.escenerio, MenuEscenario):
+					self.nextEscenario = testEscenario(self.screen)
+					self.timeNextScreen = -1
+				else:
+					self.timeNextScreen = -1
 				self.timeInitScreen = time.get_ticks()
-				self.timeNextScreen = -1
-				self.draw(ventana)
 				self.actualizar = True
+		if self.actualizar:
+			self.draw(ventana)
