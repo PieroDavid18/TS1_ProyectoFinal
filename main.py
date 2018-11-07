@@ -36,11 +36,11 @@ def main():
 			if event.type == pygame.KEYDOWN:
 				exit()
 			""" if event.type == pygame.KEYDOWN:
-				simple = simpleEscenario(manageEscenarios)
+				simple = simpleEscenario(manageEscenarios).
 				simple.image = pygame.Surface([300, 300])
 				simple.image.fill((255, 0, 0))
 				simple.rect = simple.image.get_rect()
-				manageEscenarios.draw(ventana) """
+				manageEscenarios.draw(ventana)"""
 		# pygame.display.update((manageEscenarios.sprites()[0]))
 		if manageEscenarios.actualizar:
 			pygame.display.flip()
